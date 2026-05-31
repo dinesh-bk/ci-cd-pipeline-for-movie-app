@@ -58,6 +58,6 @@ jobs:
                   ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
                   IMAGE_TAG: ${{ github.sha }}
               run: |
-                  kubectl apply -k starter/backend/k8s/
+                  kubectl apply -k ./k8s/ 
                   kubectl set image deployment/backend backend=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -n default
                   kubectl rollout status deployment/backend -n default
