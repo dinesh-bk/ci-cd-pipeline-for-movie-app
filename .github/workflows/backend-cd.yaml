@@ -23,7 +23,7 @@ jobs:
             run:
                 working-directory: starter/backend
         env:
-            ECR_REPOSITORY: movie-picture-backend
+            ECR_REPOSITORY: cicd-project-repo
         steps:
             - name: Checkout code
               uses: actions/checkout@v4
