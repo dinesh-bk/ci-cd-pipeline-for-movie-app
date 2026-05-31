@@ -1,0 +1,24 @@
+name: Frontend Setup
+description: Setup Node.js, restore cache, and install frontend dependencies
+
+runs:
+    using: composite
+    steps:
+        - name: Setup Node.js
+          uses: actions/setup-node@v4
+          with:
+              node-version: "18"
+
+        - name: Cache node modules / npm cache
+          uses: actions/cache@v4
+          with:
+              path: |
+                  ~/.npm
+              key: ${{ runner.os }}-frontend-${{ hashFiles('starter/frontend/package-lock.json') }}
+              restore-keys: |
+                  ${{ runner.os }}-frontend-
+
+        - name: Install dependencies
+          shell: bash
+          working-directory: starter/frontend
+          run: npm ci
