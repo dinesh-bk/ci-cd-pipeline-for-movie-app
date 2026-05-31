@@ -1,0 +1,27 @@
+name: Backend Continuous Integration
+
+# Triggers for the workflow
+on:
+    # Manual trigger using the workflow_dispatch event
+    workflow_dispatch:
+
+    # Automatic trigger on push events to the main branch
+    push:
+        branches:
+            - main
+jobs:
+    # Call the reusable workflow for linting and testing
+    validate:
+        uses: ./.github/workflows/backend-base.yaml
+
+    # Proceed to Build (waits for validate to finish)
+    build:
+        name: Build Docker Image
+        needs: validate # References the 'validate' job above
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Build application using Docker
+              run: docker build -t backend-app:latest .

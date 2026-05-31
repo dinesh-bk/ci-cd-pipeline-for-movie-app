@@ -1,0 +1,34 @@
+name: Backend Base (Lint & Test)
+
+on:
+    workflow_call:
+
+jobs:
+    lint:
+        name: Lint Backend
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup Backend Environment
+              # This calls the composite action we created above!
+              uses: ./.github/actions/backend-setup
+
+            - name: Run linting
+              working-directory: starter/backend
+              run: pipenv run flake8 .
+
+    test:
+        name: Test Backend
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup Backend Environment
+              uses: ./.github/actions/backend-setup
+
+            - name: Run tests
+              working-directory: starter/backend
+              run: pipenv run pytest

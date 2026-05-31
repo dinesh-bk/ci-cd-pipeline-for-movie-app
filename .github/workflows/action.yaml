@@ -1,0 +1,31 @@
+name: Backend Setup
+description: Setup Python, install pipenv, and install backend dependencies
+
+runs:
+    using: composite
+    steps:
+        - name: Setup Python
+          uses: actions/setup-python@v5
+          with:
+              python-version: "3.10"
+
+        - name: Cache pipenv virtualenv and pip cache
+          uses: actions/cache@v4
+          with:
+              path: |
+                  ~/.cache/pip
+                  ~/.local/share/virtualenvs
+              # Uses the specific Pipfile.lock in the starter/backend directory
+              key: ${{ runner.os }}-backend-${{ hashFiles('starter/backend/Pipfile.lock') }}
+              restore-keys: |
+                  ${{ runner.os }}-backend-
+
+        - name: Install pipenv
+          shell: bash
+          run: pip install pipenv
+
+        - name: Install dependencies
+          shell: bash
+          working-directory: starter/backend
+          # Including --dev ensures tools like pytest and flake8 are installed
+          run: pipenv install --dev

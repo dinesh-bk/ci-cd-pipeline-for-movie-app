@@ -1,0 +1,63 @@
+name: Backend Continuous Deployment
+
+# Triggers for the workflow
+on:
+    # Manual trigger using the workflow_dispatch event
+    workflow_dispatch:
+
+    # Automatic trigger on push events to the main branch
+    push:
+        branches:
+            - main
+jobs:
+    # 1. Validation Phase: Import the Reusable Workflow
+    validate:
+        uses: ./.github/workflows/backend-base.yaml
+
+    # 2. Deployment Phase: Only runs if validation passes
+    build-and-deploy:
+        name: Build and Deploy to EKS
+        needs: validate # Strict dependency on the imported workflow
+        runs-on: ubuntu-latest
+        defaults:
+            run:
+                working-directory: starter/backend
+        env:
+            ECR_REPOSITORY: movie-picture-backend
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Configure AWS credentials
+              uses: aws-actions/configure-aws-credentials@v4
+              with:
+                  aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                  aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                  aws_session_token: ${{ secrets.AWS_SESSION_TOKEN }}
+                  aws-region: ${{ secrets.AWS_REGION }}
+
+            - name: Login to Amazon ECR
+              id: login-ecr
+              uses: aws-actions/amazon-ecr-login@v2
+
+            - name: Build, Tag, and Push Docker image
+              env:
+                  ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+                  IMAGE_TAG: ${{ github.sha }}
+              run: |
+                  docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+                  docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
+                  docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+                  docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+
+            - name: Update kubeconfig
+              run: aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }} --region ${{ secrets.AWS_REGION }}
+
+            - name: Deploy backend to Kubernetes
+              env:
+                  ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+                  IMAGE_TAG: ${{ github.sha }}
+              run: |
+                  kubectl apply -k starter/backend/k8s/
+                  kubectl set image deployment/backend backend=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -n default
+                  kubectl rollout status deployment/backend -n default
