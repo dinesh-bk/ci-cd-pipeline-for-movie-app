@@ -6,3 +6,4 @@ node_modules
 credentials
 .pytest_cache
 delete-workflow-run.sh
+.DS_Store
