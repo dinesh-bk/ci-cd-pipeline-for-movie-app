@@ -14,6 +14,7 @@ env:
     ECR_REPOSITORY: cicd-frontend-repo
 jobs:
     frontend-lint-and-test:
+        name: Frontend Lint and Test
         uses: ./.github/workflows/frontend-base.yaml
 
     build-and-deploy:
