@@ -9,19 +9,26 @@ on:
     push:
         branches:
             - main
+    # Automatic trigger on pull request events to the main branch
+    pull_request:
+        branches:
+            - main
 jobs:
     # Call the reusable workflow for linting and testing
-    validate:
+    backend-lint-and-test:
         uses: ./.github/workflows/backend-base.yaml
 
-    # Proceed to Build (waits for validate to finish)
+    # Proceed to Build (waits for backend lint and test to finish)
     build:
         name: Build Docker Image
-        needs: validate # References the 'validate' job above
+        needs: backend-lint-and-test
         runs-on: ubuntu-latest
+        defaults:
+            run:
+                working-directory: starter/backend
         steps:
             - name: Checkout code
               uses: actions/checkout@v4
 
             - name: Build application using Docker
-              run: docker build -t backend-app:latest ./starter/backend
+              run: docker build -t backend-app:latest .

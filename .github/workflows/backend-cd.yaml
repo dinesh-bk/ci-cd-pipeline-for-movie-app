@@ -9,21 +9,22 @@ on:
     push:
         branches:
             - main
+
 jobs:
     # 1. Validation Phase: Import the Reusable Workflow
-    validate:
+    backend-lint-and-test:
         uses: ./.github/workflows/backend-base.yaml
 
     # 2. Deployment Phase: Only runs if validation passes
     build-and-deploy:
         name: Build and Deploy to EKS
-        needs: validate # Strict dependency on the imported workflow
+        needs: backend-lint-and-test
         runs-on: ubuntu-latest
         defaults:
             run:
                 working-directory: starter/backend
         env:
-            ECR_REPOSITORY: cicd-project-repo
+            ECR_REPOSITORY: cicd-backend-repo
         steps:
             - name: Checkout code
               uses: actions/checkout@v4

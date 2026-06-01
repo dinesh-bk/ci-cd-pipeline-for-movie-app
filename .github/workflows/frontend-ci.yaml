@@ -6,17 +6,22 @@ on:
     workflow_dispatch:
 
     # Automatic trigger on push events to the main branch
-    push:
-        branches:
-            - main
+    # push:
+    #     branches:
+    #         - main
+    # Automatic trigger on pull request events to the main branch
+    # pull_request:
+    #     branches:
+    #         - main
 
 jobs:
-    validate:
+    frontend-lint-and-test:
         uses: ./.github/workflows/frontend-base.yaml
 
     build:
+        name: Build Docker Image
         runs-on: ubuntu-latest
-        needs: validate
+        needs: frontend-lint-and-test
         defaults:
             run:
                 working-directory: starter/frontend
