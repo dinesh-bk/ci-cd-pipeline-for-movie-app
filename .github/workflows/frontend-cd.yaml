@@ -6,9 +6,9 @@ on:
     workflow_dispatch:
 
     # Automatic trigger on push events to the main branch
-    # push:
-    #     branches:
-    #         - main
+    push:
+        branches:
+            - main
 
 env:
     ECR_REPOSITORY: cicd-frontend-repo
